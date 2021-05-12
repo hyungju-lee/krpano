@@ -35,10 +35,149 @@
         tween(layer[intro_logo].alpha, 1);
         tween(layer[intro_guide].alpha, 1);
         );
-
     </action>
 
-	<!-- customize skin settings: maps, gyro, webvr, thumbnails, tooltips, layout, design, ... -->
+    <layer name="floorplans_container"
+           type="container"
+           bgcolor="0x000000"
+           bgalpha="0.8"
+           alpha="1"
+           width="300"
+           height="300"
+           align="right"
+           keep="true"
+           state="maximized"
+           scalechildren="true"
+           zorder="9997"
+           scale="1"
+           scale.mobile="0.7"
+    >
+        <layer name="floorplan_image" type="image"
+               url="skin/minimap_1.png"
+               align="center"
+               enabled="true"
+               onclick="toggle_floor_plan_size"
+        >
+            <!-- loadscene_blend는 아래 skin_settings의 속성입니다. -->
+            <layer name="home_front"
+                   style="mapspot"
+                   x="140"
+                   y="120"
+                   onclick="skin_loadscene(scene_image00, get(skin_settings.loadscene_blend));"
+            />
+
+            <layer name="playground"
+                   style="mapspot"
+                   x="160"
+                   y="60"
+                   onclick="skin_loadscene(scene_image04, get(skin_settings.loadscene_blend));"
+            />
+
+            <layer name="trail1"
+                   style="mapspot"
+                   x="100"
+                   y="45"
+                   onclick="skin_loadscene(scene_image01, get(skin_settings.loadscene_blend));"
+            />
+
+            <layer name="trail2"
+                   style="mapspot"
+                   x="65"
+                   y="5"
+                   onclick="skin_loadscene(scene_image02, get(skin_settings.loadscene_blend));"
+            />
+
+            <layer name="resting_place"
+                   style="mapspot"
+                   x="230"
+                   y="125"
+                   onclick="skin_loadscene(scene_image03, get(skin_settings.loadscene_blend));"
+            />
+        </layer>
+        <plugin name="radar"
+                url.html5="plugins/radar.js"
+                align="center"
+                edge="center"
+                x="0" y="0"
+                scale="0.5"
+                heading="0.0"
+                headingoffset="90.0"
+                fillcolor="0x45bfe3"
+                fillalpha="0.5"
+                linewidth="0.0"
+                linecolor="0xFFFFFF"
+                linealpha="0.3"
+                invert="false"
+        />
+
+        <layer name="activespot"
+               type="container"
+               width="15"
+               height="15"
+               bgalpha="1"
+               bgroundedge="15"
+               bgborder="2 0x45bfe3 1"
+               bgcolor="0x45bfe3"
+               bgshadow="0 0 10 3 0x000000 0.25"
+               align="center"
+               edge="center"
+               enabled="true"
+               x="0"
+               y="0"
+        />
+    </layer>
+
+    <!-- mapspot이 클릭되게하려면 bgcapture를 true로 설정 -->
+    <style name="mapspot"
+           type="container"
+           width="15"
+           height="15"
+           bgalpha="1"
+           bgroundedge="15"
+           bgborder="2 0xFF0000 1"
+           bgcolor="0xFFFFFF"
+           bgshadow="0 0 10 3 0x000000 0.25"
+           align="lefttop"
+           edge="center"
+           enabled="true"
+           bgcapture="true"
+    />
+
+    <action name="updateradar">
+        <!-- %1은 첫번째 인자라는 뜻, %2는 두번째 인자 -->
+        trace(%1);
+        set(layer[activespot].parent, %1);
+        set(layer[radar].parent, %1);
+        tween(layer[radar].heading, %2);
+    </action>
+
+    <action name="toggle_floor_plan_size">
+        set(state, get(layer[floorplans_container].state));
+
+        <!-- if문의 첫번째 인자가 true면 두번째 인자 실행, false면 세번째 인자 실행 -->
+        if(
+            get(state) == minimized,
+            <!-- if state is minimized -->
+            if(
+                device.mobile,
+                tween(layer[floorplans_container].scale, 0.7);
+                ,
+                tween(layer[floorplans_container].scale, 1);
+            );
+            set(layer[floorplans_container].state, maximized);
+            ,
+            <!-- if state is maximized -->
+            if(
+                device.mobile,
+                tween(layer[floorplans_container].scale, 0.2);
+                ,
+                tween(layer[floorplans_container].scale, 0.5);
+            );
+            set(layer[floorplans_container].state, minimized);
+        )
+    </action>
+
+    <!-- customize skin settings: maps, gyro, webvr, thumbnails, tooltips, layout, design, ... -->
 	<skin_settings maps="false"
 	               maps_type="google"
 	               maps_bing_api_key=""
@@ -100,9 +239,9 @@
 	-->
 	<!-- <include url="skin/vtourskin_design_flat_light.xml"  /> -->
 	<!-- <include url="skin/vtourskin_design_glass.xml"       /> -->
-<!--	 <include url="skin/vtourskin_design_ultra_light.xml" />-->
-<!--	 <include url="skin/vtourskin_design_117.xml"         />-->
-	 <include url="skin/vtourskin_design_117round.xml"    />
+    <!-- <include url="skin/vtourskin_design_ultra_light.xml" /> -->
+    <!-- <include url="skin/vtourskin_design_117.xml"         /> -->
+    <include url="skin/vtourskin_design_117round.xml"    />
 	<!-- <include url="skin/vtourskin_design_black.xml"       /> -->
 
 
@@ -113,9 +252,7 @@
 		if(startactions !== null, startactions() );
 	</action>
 
-
-	
-	<scene name="scene_image00" title="집앞" onstart="" thumburl="panos/image00.tiles/thumb.jpg" lat="" lng="" heading="">
+	<scene name="scene_image00" title="집앞" onstart="updateradar(home_front, -90.0)" thumburl="panos/image00.tiles/thumb.jpg" lat="" lng="" heading="">
 		
 		<control bouncinglimits="calc:image.cube ? true : false" />
 
@@ -132,7 +269,7 @@
 
 	</scene>
 
-	<scene name="scene_image01" title="산책길" onstart="" thumburl="panos/image01.tiles/thumb.jpg" lat="" lng="" heading="">
+	<scene name="scene_image01" title="산책길" onstart="updateradar(trail1, -120.0)" thumburl="panos/image01.tiles/thumb.jpg" lat="" lng="" heading="">
 		
 		<control bouncinglimits="calc:image.cube ? true : false" />
 
@@ -148,7 +285,7 @@
 
 	</scene>
 
-	<scene name="scene_image02" title="산책길2" onstart="" thumburl="panos/image02.tiles/thumb.jpg" lat="" lng="" heading="">
+	<scene name="scene_image02" title="산책길2" onstart="updateradar(trail2, -130.0)" thumburl="panos/image02.tiles/thumb.jpg" lat="" lng="" heading="">
 		
 		<control bouncinglimits="calc:image.cube ? true : false" />
 
@@ -163,7 +300,7 @@
 
 	</scene>
 
-	<scene name="scene_image03" title="쉬는곳" onstart="" thumburl="panos/image03.tiles/thumb.jpg" lat="" lng="" heading="">
+	<scene name="scene_image03" title="쉬는곳" onstart="updateradar(resting_place, 0)" thumburl="panos/image03.tiles/thumb.jpg" lat="" lng="" heading="">
 		
 		<control bouncinglimits="calc:image.cube ? true : false" />
 
@@ -178,7 +315,7 @@
 
 	</scene>
 
-	<scene name="scene_image04" title="놀이터" onstart="" thumburl="panos/image04.tiles/thumb.jpg" lat="" lng="" heading="">
+	<scene name="scene_image04" title="놀이터" onstart="updateradar(playground, -110.0)" thumburl="panos/image04.tiles/thumb.jpg" lat="" lng="" heading="">
 		
 		<control bouncinglimits="calc:image.cube ? true : false" />
 
@@ -192,6 +329,5 @@
 		<hotspot name="spot1" style="skin_hotspotstyle" ath="-146.697" atv="10.820" linkedscene="scene_image00" />
 
 	</scene>
-
 
 </krpano>
